@@ -13,7 +13,24 @@ type Pizza struct {
 	Price int    `json:"price"`
 }
 
+type Order struct {
+	PizzaID  int `json:"pizza_id"`
+	Quantity int `json:"quantity"`
+	Total    int `json:"total"`
+}
+
 type Pizzas []Pizza
+
+type Orders []Order
+
+type pizzasHandler struct {
+	pizzas *Pizzas
+}
+
+type ordersHandler struct {
+	pizzas *Pizzas
+	orders *Orders
+}
 
 func (ps Pizzas) FindByID(ID int) (Pizza, error) {
 	for _, pizza := range ps {
@@ -23,18 +40,6 @@ func (ps Pizzas) FindByID(ID int) (Pizza, error) {
 	}
 
 	return Pizza{}, fmt.Errorf("Couldn't find pizza with ID: %d", ID)
-}
-
-type Order struct {
-	PizzaID  int `json:"pizza_id"`
-	Quantity int `json:"quantity"`
-	Total    int `json:"total"`
-}
-
-type Orders []Order
-
-type pizzasHandler struct {
-	pizzas *Pizzas
 }
 
 func (ph pizzasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -51,11 +56,6 @@ func (ph pizzasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-}
-
-type ordersHandler struct {
-	pizzas *Pizzas
-	orders *Orders
 }
 
 func (oh ordersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
