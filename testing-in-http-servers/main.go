@@ -1,0 +1,124 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+)
+
+type Pizza struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
+}
+
+type Order struct {
+	PizzaID  int `json:"pizza_id"`
+	Quantity int `json:"quantity"`
+	Total    int `json:"total"`
+}
+
+type Pizzas []Pizza
+
+type Orders []Order
+
+type pizzasHandler struct {
+	pizzas *Pizzas
+}
+
+type ordersHandler struct {
+	pizzas *Pizzas
+	orders *Orders
+}
+
+func (ps Pizzas) FindByID(ID int) (Pizza, error) {
+	for _, pizza := range ps {
+		if pizza.ID == ID {
+			return pizza, nil
+		}
+	}
+
+	return Pizza{}, fmt.Errorf("Couldn't find pizza with ID: %d", ID)
+}
+
+func (ph pizzasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	log.Println("")
+	switch r.Method {
+	case http.MethodGet:
+		//왜 *ph.pizzas로 사용해야 하나? ph.pizzas 주소를 닫고 있기 때문에 *로 값을 dereference해서 가져와야 함
+		if len(*ph.pizzas) == 0 {
+			http.Error(w, "Error: No pizzas found", http.StatusNotFound)
+			return
+		}
+
+		//왜 &ph.pizzas로 넘로 넘기지 않나? - ph.pizzas 자체가 주소 이니까 이렇게 넘겨주는게 맞아보임
+		json.NewEncoder(w).Encode(ph.pizzas)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (oh ordersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodPost:
+		var o Order
+
+		if len(*oh.pizzas) == 0 {
+			http.Error(w, "Error: No pizzas found", http.StatusNotFound)
+			return
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&o)
+		if err != nil {
+			http.Error(w, "Can't decode body", http.StatusBadRequest)
+			return
+		}
+
+		p, err := oh.pizzas.FindByID(o.PizzaID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error: %s", err), http.StatusBadRequest)
+			return
+		}
+
+		o.Total = p.Price * o.Quantity
+		*oh.orders = append(*oh.orders, o)
+		json.NewEncoder(w).Encode(o)
+	case http.MethodGet:
+		json.NewEncoder(w).Encode(oh.orders)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func main() {
+	var orders Orders
+	pizzas := Pizzas{
+		Pizza{
+			ID:    1,
+			Name:  "Pepperoni",
+			Price: 12,
+		},
+		Pizza{
+			ID:    2,
+			Name:  "Capricciosa",
+			Price: 11,
+		},
+		Pizza{
+			ID:    3,
+			Name:  "Margherita",
+			Price: 10,
+		},
+	}
+
+	mux := http.NewServeMux()
+	//&pizzas로 넘겨주는 이유는 주소를 담는 변수로 선언되어 있어서 그러함
+	mux.Handle("/pizzas", pizzasHandler{&pizzas})
+	mux.Handle("/orders", ordersHandler{&pizzas, &orders})
+
+	log.Fatal(http.ListenAndServe(":8080", mux))
+}

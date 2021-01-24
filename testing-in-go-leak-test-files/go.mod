@@ -1,4 +1,4 @@
-module github.com/fteem/go-playground/testing-in-go-leak-test-files
+module github.com/kenshin579/analyzing-go-playground/testing-in-go-leak-test-files
 
 go 1.14
 

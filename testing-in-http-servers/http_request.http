@@ -1,0 +1,17 @@
+
+### 주문
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "pizza_id": 1,
+  "quantity": 4
+}
+
+### 있는 피자 조회
+GET http://localhost:8080/pizzas
+Accept: application/json
+
+### 주문 조회
+GET http://localhost:8080/orders
+Accept: application/json
