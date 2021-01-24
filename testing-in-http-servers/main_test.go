@@ -11,7 +11,7 @@ func TestPizzasHandler(t *testing.T) {
 	tt := []struct {
 		name       string
 		method     string
-		input      *Pizzas
+		input      *Pizzas //주소값으로 받게 한 이유는? 객체 수정을 하기 위해서
 		want       string
 		statusCode int
 	}{
@@ -49,6 +49,7 @@ func TestPizzasHandler(t *testing.T) {
 			request := httptest.NewRequest(tc.method, "/orders", nil)
 			responseRecorder := httptest.NewRecorder()
 
+			//왜 &tc.input을 하지 않았나? - tc.input 변수가 주소를 받고 있기 떄문에
 			pizzasHandler{tc.input}.ServeHTTP(responseRecorder, request)
 
 			if responseRecorder.Code != tc.statusCode {

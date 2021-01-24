@@ -45,13 +45,16 @@ func (ps Pizzas) FindByID(ID int) (Pizza, error) {
 func (ph pizzasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	log.Println("")
 	switch r.Method {
 	case http.MethodGet:
+		//왜 *ph.pizzas로 사용해야 하나? ph.pizzas 주소를 닫고 있기 때문에 *로 값을 dereference해서 가져와야 함
 		if len(*ph.pizzas) == 0 {
 			http.Error(w, "Error: No pizzas found", http.StatusNotFound)
 			return
 		}
 
+		//왜 &ph.pizzas로 넘로 넘기지 않나? - ph.pizzas 자체가 주소 이니까 이렇게 넘겨주는게 맞아보임
 		json.NewEncoder(w).Encode(ph.pizzas)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -113,6 +116,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	//&pizzas로 넘겨주는 이유는 주소를 담는 변수로 선언되어 있어서 그러함
 	mux.Handle("/pizzas", pizzasHandler{&pizzas})
 	mux.Handle("/orders", ordersHandler{&pizzas, &orders})
 
