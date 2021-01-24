@@ -1,4 +1,4 @@
-module github.com/fteem/go-playground/snippetbin
+module github.com/kenshin579/analyzing-go-playground/snippetbin
 
 go 1.14
 

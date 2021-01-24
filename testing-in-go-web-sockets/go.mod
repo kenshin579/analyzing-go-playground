@@ -1,4 +1,4 @@
-module github.com/fteem/go-playground/testing-in-go-web-sockets
+module github.com/kenshin579/analyzing-go-playground/testing-in-go-web-sockets
 
 go 1.13
 

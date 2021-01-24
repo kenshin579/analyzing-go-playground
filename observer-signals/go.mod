@@ -1,4 +1,4 @@
-module github.com/fteem/go-playground/observer
+module github.com/kenshin579/analyzing-go-playground/observer
 
 go 1.14
 
